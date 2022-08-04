@@ -1,0 +1,46 @@
+public function sale_xls()
+	{
+		if(sessionExist()) 
+		{
+			$user_id 	= $this->session->userdata('user_id');
+			$role 		= $this->session->userdata('user_role_id');
+			
+			if($role == 1 || $role == 2 || $role == 4): 
+			$record = $this->reportsmdl->get_sale_summary_data_xls($_SESSION['fin_year']);
+			// elseif($role == 3):
+			// $record = $this->reportsmdl->get_sale_summary_data_xls_for_designer($_SESSION['fin_year'],$user_id);
+			endif;
+			// echo "<pre>";print_r($record);exit();
+			$this->load->library('excel');
+            $this->excel->setActiveSheetIndex(0);
+            $this->excel->getActiveSheet()->setTitle("SALE REPORT YEAR ".$_SESSION['fin_year']); 
+
+            $rowCount = 1;
+            foreach ($record['excel_array'] as $key => $data) 
+            {
+                /*SET COLUMN WIDTH AND DATA*/
+                foreach(range('A','L') as $key => $columnID)
+                {
+                    /*set coulumn width*/
+                    $this->excel->getActiveSheet()->getColumnDimension($columnID)->setAutoSize(true);
+                    
+                    /*set column data*/
+                    $this->excel->getActiveSheet()->SetCellValue($columnID.$rowCount, $data[$key]);
+                }
+                $rowCount++; 
+            }
+
+            $filename='sale_summary'.date('dMY').'.csv'; //save our workbook as this file name
+            header('Content-Type: application/vnd.ms-excel'); //mime type
+            header('Content-Disposition: attachment;filename="'.$filename.'"'); //tell browser what's the file name
+            header('Cache-Control: max-age=0'); //no cache
+            // Instantiate a Writer to create an OfficeOpenXML Excel .xlsx file
+            $objWriter = PHPExcel_IOFactory::createWriter($this->excel, 'Excel2007');
+            // Write the Excel file to filename some_excel_file.xlsx in the current directory
+            $objWriter->save('php://output');
+		} 
+		else 
+		{
+			redirect('loginctrl/logout');	
+		}	
+	}
