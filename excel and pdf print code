@@ -1,0 +1,40 @@
+//code 1
+
+if (isset($_GET['search_value_from_date']) && !empty($_GET['search_value_from_date'])) 
+{
+	$date = date('Y-m-d', strtotime($_GET['search_value_from_date']));
+	$filename='COMP_INV_BULK_'.date('d_m_Y').'.csv'; //save our workbook as this file name
+	header('Content-Type: text/csv; charset=utf-8'); //mime type
+	header('Content-Disposition: attachment;filename="'.$filename.'"'); //tell browser what's the file name
+	$output = fopen('php://output', 'w');
+	$fields = ['BINS NAME', 'DATE', 'COMPONENT CODE', 'COMPONENT NAME', 'COMPONENT STICKER', 'PREVIOUS DAY CLOSING STOCK', 'RECEIVED FROM DC', 'CONSUMPTION', 'RETURN TO DC', 'SPOILAGE', 'FREE SAMPLES', 'CALCULATED CLOSING STOCK', 'PHYSICAL CLOSING STOCK', 'TOMORROW EXPIRY', 'DAY AFTER TOMORROW EXPIRY', 'PILFERAGE', 'OPEN GRN'];
+	fputcsv($output, $fields);
+	$data = $this->db_operations->get_record('component_inventory_dp_bin_report', ['date' => $date]);
+
+	if (!empty($data)) {
+		foreach ($data as $key => $value) {
+			fputcsv($output, $value);
+		}
+	}
+	fclose($output);
+}
+
+//code2
+<script>
+    const print_item = (item_id) => {
+        let data = $('#item_wrapper').html();
+		let mywindow = window.open("", "PRINT", "height=1200,width=1200");
+		mywindow.document.write(`<html><body>${data}</body><html>`);
+		mywindow.document.close(); // necessary for IE >= 10
+		mywindow.focus(); // necessary for IE >= 10*/
+
+		mywindow.print();
+		mywindow.close();
+
+		return true;
+    }
+    const excel_item = (item_id) => {
+        let data = $('#item_wrapper').html();
+        window.open('data:application/vnd.ms-excel,' + encodeURIComponent(data));
+    }
+</script>
